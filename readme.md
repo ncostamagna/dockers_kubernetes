@@ -26,6 +26,7 @@ curl -Lo minikube https://storage.googleapis.com/minikube/releases/latest/miniku
 sudo cp minikube /usr/local/bin && rm minikube
 sudo apt-get install -y virtualbox
 ```
+<br />
 
 # Minikube 101
 
@@ -43,6 +44,7 @@ minikube start --cpus=2 --memory=1G --driver=docker
 ```sh
 minikube status # Estado de varios componentes
 kubectl get nodes # Muestra los nodos que se estan ejecunado
+kubectl get all # Todos los objetos que estan creados
 
 minikube pause # Esto va a pausar el clouster, si ejecuto ahora un get node no va a responder
 minikube unpause # Restauro el estado del clouster (pause y unpause medio al pedo)
@@ -82,12 +84,49 @@ minikube addons enable nombre-del-addons # Activamos el addons
 
 minikube nombre-del-addons # Nos abre el addons, en este caso lo hicimos con dashboard
 ```
-
+<br />
 
 
 # Minikube
 
+**Minikube** nos va a permitir crear un cluster de kubernetes en una pequeña maquina virtual, de esta forma podemos practicar los comandos de Kubernetes sin necesidad de crear un gran cluster
+
+```sh
+sudo apt-get install htop -y # ver recursos  de nuestra maquina, version avanzada de top
+htop
+
+```
+
+**Addons**: Componentes de kubernetes
+- **dashboard**: Nos va a mostrat informacion de todo lo que esta corriendo
+
 ### Pods
+
+```yaml
+apiVersion: apps/v1
+kind: Deployment # Tipo de objetos
+metadata: # metadatos de uso interno
+    name: nginx-deployment
+spec:   # Especificacion
+    selector:
+        matchLabels:
+            app: nginx
+    replicas: 2 # 2 pods
+    template:
+        metadata:
+            labels:
+                app: nginx
+        spec:
+            containers:
+            -   name: nginx # contenedor nginx
+                image: nginx:1.7.9 # va a descargar de docker hub
+                ports:
+                -   containerPort: 80 # puerto expuesto
+```
+```sh
+# Podemos hacerlo de esta manera tambien, pero es muy propensa a errores
+kubectl run --image=nginx:1.7.0 --port:80 --replicas=2 nginx-deployment
+```
 
 Generamos un archivo **pod-test1.yaml**
 
