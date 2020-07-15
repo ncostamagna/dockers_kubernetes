@@ -100,8 +100,6 @@ htop
 **Addons**: Componentes de kubernetes
 - **dashboard**: Nos va a mostrat informacion de todo lo que esta corriendo
 
-### Pods
-
 ```yaml
 apiVersion: apps/v1
 kind: Deployment # Tipo de objetos
@@ -128,6 +126,14 @@ spec:   # Especificacion
 kubectl run --image=nginx:1.7.0 --port:80 --replicas=2 nginx-deployment
 ```
 
+### Pods
+
+Va a indicar un contenedor o un grupo de contenedores, no podemos ejecutar un contenedor a secas
+como lo hacemos con Docker, debemos hacerlo mediante un pod<br />
+Un Pod estara en ejecucion el tiempo que su proceso principal este en ejecucion, un pod por lo general sera un servidor web, una base de datos, etc..<br />
+
+![Pods](imagenes/111.png)
+
 Generamos un archivo **pod-test1.yaml**
 
 ```yaml
@@ -144,14 +150,31 @@ spec:   #Especificacion
 ```
 
 ```sh
-kubectl apply -f pod-test1.yaml 
-sudo kubectl get all
+kubectl apply -f 
+sudo kubectl get all # Objeto de pod-test1.yaml tipo Pod que esta corriendo
 sudo kubectl get pods
-sudo kubectl get pods -o wide
+sudo kubectl get pods -o wide # Vemos en que nodo se esta ejecutando los Pods
 
-sudo kubectl describe pod {nombre}
-kubectl delete -f {nombre}
-kubectl delete pod {nombre}
+sudo kubectl describe pod {nombre} # detalle del pod
+kubectl delete -f {nombre} # eliminamos por el nombre pod-test1.yaml 
+kubectl delete pod {nombre} # o por el tipo de objeto (pod) y el nombre del objeto (nginx)
 ```
-
+Si vemos la IP del pod y tratamos de acceder no vamos a poder desde afuera, para verlo debemos entrar
+```sh
+minikube ssh
+docker ps # Listamos dentro de minikube los dockers que estan corriendo
+```
 Cuando levantemos un Pods no vamos a poder verlo desde afuera hasta que levantemos un servicio
+
+```sh
+kubectl apply -f pod-test1.yaml # ejecutamos el yaml que habiamos generado
+kubectl exec -it nginx bash # Entramos al pod, nginx es el nombre del pod
+
+#instalamos curl
+curl localhost # vemos como nos devuelve el html por defecto de nginx
+
+kubectl port-forward nginx 8080:80 # nginx (nombre pod), del 80 de nginx al 8080 de nuestra maquina
+# De esta manera haciendo un
+curl localhost
+# en nuestra maquina, podriamos acceder sin entrar al cluster
+```
