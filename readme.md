@@ -40,6 +40,51 @@ Vamos a usar el de Dockers que es el que nos interesa
 minikube start --cpus=2 --memory=1G --driver=docker
 ```
 
+```sh
+minikube status # Estado de varios componentes
+kubectl get nodes # Muestra los nodos que se estan ejecunado
+
+minikube pause # Esto va a pausar el clouster, si ejecuto ahora un get node no va a responder
+minikube unpause # Restauro el estado del clouster (pause y unpause medio al pedo)
+
+minikube stop # Para el closter directamente, todos los componentes, para volver a levantarlo start
+```
+
+En el archivo **./minikube/config/config.json**<br />
+podemos fichar opciones, generamos una con el comando
+```sh
+minikube config set cpus 2
+```
+Vemos que el json queda asi ahora, si hago un delete y un start, arrancaria ya con esas opciones
+```json
+{
+    "cpus": 2
+}
+```
+Eliminamos una opcion
+```sh
+minikube config unset cpus
+```
+
+### Troubleshooting
+```sh
+minikube ip # Obtener IP
+minikube ssh # Nos conectamos al cluster, podemos ver todos los dockers dentro
+minikube logs # Logs del sistema
+minikube logs f --problems=true # Logs solo de los errores
+minikube update-check # Ultima version de minikube
+```
+
+```sh
+minikube addons list # Podemos ver todos los addons
+minikube addons enable nombre-del-addons # Activamos el addons
+# Los componentes van a arrancar en forma de contenedor en nuestro cluster
+
+minikube nombre-del-addons # Nos abre el addons, en este caso lo hicimos con dashboard
+```
+
+
+
 # Minikube
 
 ### Pods
