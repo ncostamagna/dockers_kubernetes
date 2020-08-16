@@ -178,3 +178,128 @@ kubectl port-forward nginx 8080:80 # nginx (nombre pod), del 80 de nginx al 8080
 curl localhost
 # en nuestra maquina, podriamos acceder sin entrar al cluster
 ```
+
+**Metadatos**
+```yaml
+apiVersion: v1
+kind: Pod #Tipo de objetos
+metadata: #metadatos de uso interno
+    name: nginx
+    labels:
+      project: aplicacion1
+      environment: testing # Podriamos identificar en los diferentes ambientes
+spec:   #Especificacion
+    containers:
+    -   name: nginx #contenedor nginx
+        image: nginx:1.7.9 #va a descargar de docker hub
+        ports:
+        -   containerPort: 80
+```
+**Selector**<br />
+Podemos filtrar y buscar los pods generados
+```sh
+kubectl get pods -o wide --show-labels --selector project=aplicacion1
+```
+**Replication Controllers**<br />
+Escalabilidad horizontal, podemos generar replicas y darle escalabilidad horizontal, esto genera un replication controller, lo podemos ver con **kubectl get all -o wide --show-labels**
+```yaml
+apiVersion: v1
+kind: Pod #Tipo de objetos
+metadata: #metadatos de uso interno
+    name: nginx
+    labels:
+      project: aplicacion1
+      environment: testing # Podriamos identificar en los diferentes ambientes
+spec:   #Especificacion
+    replicas: 2 # ejecutamos 2 replicas
+    containers:
+    -   name: nginx #contenedor nginx
+        image: nginx:1.7.9 #va a descargar de docker hub
+        ports:
+        -   containerPort: 80
+```
+**Servicios**<br />
+Para acceder desde afuera al puerto 80, un servicio es una abstraccion que define como va a ser el acceso externo, el pod que va a acceder en un servicio lo a va ser mediante un selector<br />
+Pods -> Selection -> Servicio <br />
+
+```sh
+kubectl apply -f pod-test1.yaml 
+```
+Generamos un service
+```yaml
+apiVersion: v1
+kind: Service #Tipo de objetos
+metadata: #metadatos de uso interno
+    name: my-service
+    labels:
+      project: aplicacion1
+      environment: testing # Podriamos identificar en los diferentes ambientes
+spec:
+    type: NodePort 
+    selector: # el servicio va a enviar el trafico a los que esten usando este selector
+      project: aplicacion1
+      environment: testing # Podriamos identificar en los diferentes ambientes
+    ports:
+      - protocol: TCP
+        port: 80 # envia el trafico al puerto 80
+```
+```sh
+kubectl apply -f servicio.yaml 
+kubectl get all -o wide --show-labels # tiene que mandar a los labels que definimos,
+                                      # sino va a mandar a un pod que no existe
+
+minikube ip # nos devuelve la IP
+curl 192.168.98.101.31318 # a la IP de minikube y al puerto servicio
+```
+
+En este caso si elimino el pod-ejempli1.yml no me afecaria el puerto del servicio
+- ClusterIP: Expone servicio en ip interna del cluster
+- NodePort: Expone servicio en cada ip de los nodos, puerto estatico
+- LoadBalancer: Expone el servicio externamente usando un load balancer
+
+**Replica Set**<br />
+va a soportar el nuevo modo de selectores, la recomendacion es no usar la Replica Set sino es su lugar utilizar los tipos **deployment**
+![112](imagenes/112.png)
+![113](imagenes/113.png)
+```sh
+kubectl get rs # listarlo
+hubectl describe rs frontend # descripcion del replica set frontend
+hubectl delete rs frontend # Eliminar
+hubectl delete rs frontend --cascade=false # se elimina sin eliminar todo lo que RS haya creado
+kubectl delete pod --all # Elimina todos los pods
+```
+
+**Deployments**<br />
+Va a ser un emboltorio, tiene unos metadatos y el numero de replicas, viene bien
+usarlo cuando queremos que un objeto deployment gestione sus mediaset y pods.<br />
+```yaml
+apiVersion: app/v1
+kind: Deployment #Tipo de objetos
+metadata: #metadatos de uso interno
+    name: nginx-deployment
+    labels:
+      app: nginx
+spec:
+    replicas: 3
+    selector: 
+        matchLabels:
+            app: nginx
+
+    template:
+        metadata:
+            labels:
+                app: nginx
+        spec:
+            containers:
+            -   name: nginx
+                image: nginx:1.7.9
+                ports:
+                -   containerPort: 80
+```
+
+```sh
+kubectl set image deployment/nginx-deployment nginx=nginx:1.15;
+
+# Nos va a mostrar el estado del rollout
+kubectl rollout status deployment/nginx-deployment
+```
