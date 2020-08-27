@@ -1,8 +1,8 @@
 # Indice
-- [Initial](#initial)
-- [CI Fundamentals](#ci-fundamentals)
-- [YAML Basic](#yamlbasic)
-- [GitLab CI in AWS](#gitlabciinaws)
+- [Instalaciones](#instalaciones)
+- [Minikube 101](#minikube-101)
+- [Minikube](#minikube)
+
 <br />
 
 # Instalaciones
@@ -303,3 +303,44 @@ kubectl set image deployment/nginx-deployment nginx=nginx:1.15;
 # Nos va a mostrar el estado del rollout
 kubectl rollout status deployment/nginx-deployment
 ```
+<br />
+
+**Volumenes**<br />
+Podemos asociar volumenes a Pods (manera por defecto), pero existen otros tipos de volumenes (este seria el volumen local), veremos otros tipos en AWS<br /><br />
+**ConfigMaps**<br />
+Vaalores de configuracion o ficheros que le vamos a pasar a nuestros contenedores
+```sh
+kubectl create configmap test-cm --from-literal variable1=valor1
+kubectl descrive cm test-cm
+```
+<br />
+
+**Secrets** <br />
+PArecida a los ConfigMaps pero para almacenar cosas sensibles (password, token, etc), se van a almacenar de forma encriptada a travez de variables de entorno
+
+```sh
+kubectl get secrets # listar secrets
+kubectl create secret generic nombre_credeciales --from-file=./file.txt --from-file=./otro_file.txt # los codifica en base64
+kubectl describe secrets nombre_credeciales
+kubectl get secrets nombre_credeciales -o yaml
+```
+<br />
+
+**Request Limits** <br />
+
+- request: cuanos recursos necesitaran los povs como minimo
+- limit: maximo recursos que nuestro povs van a utilizar
+<br />
+tipos de recursos: memoria o cpu
+<br /><br />
+
+**Escalamiento**<br />
+Cuanto trabajemos con kubernetes utilizaremos horizontal pod autoscaler (HPA)
+<br /><br />
+
+**Annotations**<br />
+Igual que un label pero cambia donde lo usaremos, nos va a permitir agregar a los objetos datos para leer por otros kubernetes. Label nos permiten filtrar, Annotations nos permite agregar notas para detallar
+<br /><br />
+
+**RBAC**<br />
+nos permite la autorizacion, permisos basados a roles
