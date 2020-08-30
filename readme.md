@@ -3,6 +3,7 @@
 - [Minikube 101](#minikube-101)
 - [Minikube](#minikube)
 - [Kops en AWS](#kops-en-aws)
+- [EKS](#eks)
 
 <br />
 
@@ -424,3 +425,176 @@ podemos exportar el modelo a terraform:
 ```
 https://kops.sigs.k8s.io/getting_started/arguments/
 
+<br /><br />
+Levantamos el cluster de nuevo, desplegamos nuestro primer Deployment
+
+```yml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+  labels: 
+    app: nginx
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+      - name: nginx
+        image: minahue/nginx-helloworld
+        ports:
+        - containerPort: 80
+```
+
+Lo desplegamos
+```sh
+kubectl apply -f nginx-deployment.yml
+
+# hacemos en get all para ver como esta el pod
+kubectl get all
+```
+
+### ELB 
+Creamos un servicio de tipo Load Balancer
+```yml
+kind: Service
+apiVersion: v1
+metadata:
+  name: nginx-lb
+  labels: 
+    app: nginx
+spec:
+  type: LoadBalancer
+  selector:
+    app: nginx
+  ports:
+    - protocol: TCP
+    port: 80
+```
+Le damos un apply y vemos en la consola de AWS que ya tenemos un nuevo ELB, si queremos agregar mas nodos tenemos que aumentar el numero de reeplicas en el ELB del yml, si ponemos mas replicas de los nodos que tenemos va a ir repitiendo los nodos
+
+```sh
+kops edit ig nodes
+# aumento a 3 el maxSize y el minSize
+# hacemos el update
+```
+Ahora volvemos a correr el ELB con las 3 replicas y vemos que en AWS ya aparece con 3 nodos<br />
+
+### ALB (App Load Balancer)
+Necesitamos 2 componentes 
+
+#### Ingress Controller
+va a ser un nodo que se va a deplegar a nivel de todo el cluster, va a estar vigilando cambios constantemente<br />
+https://github.com/kubernetes-sigs/aws-alb-ingress-controller/blob/master/docs/examples/alb-ingress-controller.yaml
+
+```yml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app.kubernetes.io/name: alb-ingress-controller
+  name: alb-ingress-controller
+  namespace: kube-system
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: alb-ingress-controller
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: alb-ingress-controller
+    spec:
+      containers:
+        - name: alb-ingress-controller
+          args:
+            - --ingress-class=alb
+            - --cluster-name=testcluster.hosts3.co.uk
+            - --aws-vpc-id=vpc-{VPC ID} # el ID de la VPC
+            - --aws-region=us-west-1 # region
+          env:
+
+          image: docker.io/amazon/aws-alb-ingress-controller:v1.1.9
+      serviceAccountName: alb-ingress-controller
+```
+Y estos van a ser los permisos que vamos a necesitar y los roles
+```yml
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  labels:
+    app.kubernetes.io/name: alb-ingress-controller
+  name: alb-ingress-controller
+rules:
+  - apiGroups:
+      - ""
+      - extensions
+    resources:
+      - configmaps
+      - endpoints
+      - events
+      - ingresses
+      - ingresses/status
+      - services
+      - pods/status
+    verbs:
+      - create
+      - get
+      - list
+      - update
+      - watch
+      - patch
+  - apiGroups:
+      - ""
+      - extensions
+    resources:
+      - nodes
+      - pods
+      - secrets
+      - services
+      - namespaces
+    verbs:
+      - get
+      - list
+      - watch
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  labels:
+    app.kubernetes.io/name: alb-ingress-controller
+  name: alb-ingress-controller
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: alb-ingress-controller
+subjects:
+  - kind: ServiceAccount
+    name: alb-ingress-controller
+    namespace: kube-system
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  labels:
+    app.kubernetes.io/name: alb-ingress-controller
+  name: alb-ingress-controller
+  namespace: kube-system
+...
+```
+```sh
+# Ejecutamos
+kubectl apply -f rbac-role.yaml -f alb-ingress-controller-yaml
+
+# muestre las equitetas asi los puedo filtrar
+kubectl get pods -n kube-system --show-labels
+
+# vemos el log del ingress que listamos anteriormente
+kubectl -n kube-system logs alb-ingress-aasdas-ad -f
+```
