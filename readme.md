@@ -423,3 +423,4 @@ podemos exportar el modelo a terraform:
 --target=terraform
 ```
 https://kops.sigs.k8s.io/getting_started/arguments/
+
