@@ -99,7 +99,8 @@ htop
 
 ```
 
-**Addons**: Componentes de kubernetes
+### Addons
+Componentes de kubernetes
 - **dashboard**: Nos va a mostrat informacion de todo lo que esta corriendo
 
 ```yaml
@@ -181,7 +182,7 @@ curl localhost
 # en nuestra maquina, podriamos acceder sin entrar al cluster
 ```
 
-**Metadatos**
+### Metadatos
 ```yaml
 apiVersion: v1
 kind: Pod #Tipo de objetos
@@ -197,12 +198,13 @@ spec:   #Especificacion
         ports:
         -   containerPort: 80
 ```
-**Selector**<br />
+### Selector
 Podemos filtrar y buscar los pods generados
 ```sh
 kubectl get pods -o wide --show-labels --selector project=aplicacion1
 ```
-**Replication Controllers**<br />
+
+### Replication Controllers
 Escalabilidad horizontal, podemos generar replicas y darle escalabilidad horizontal, esto genera un replication controller, lo podemos ver con **kubectl get all -o wide --show-labels**
 ```yaml
 apiVersion: v1
@@ -220,7 +222,7 @@ spec:   #Especificacion
         ports:
         -   containerPort: 80
 ```
-**Servicios**<br />
+### Servicios
 Para acceder desde afuera al puerto 80, un servicio es una abstraccion que define como va a ser el acceso externo, el pod que va a acceder en un servicio lo a va ser mediante un selector<br />
 Pods -> Selection -> Servicio <br />
 
@@ -259,7 +261,7 @@ En este caso si elimino el pod-ejempli1.yml no me afecaria el puerto del servici
 - NodePort: Expone servicio en cada ip de los nodos, puerto estatico
 - LoadBalancer: Expone el servicio externamente usando un load balancer
 
-**Replica Set**<br />
+### Replica Set
 va a soportar el nuevo modo de selectores, la recomendacion es no usar la Replica Set sino es su lugar utilizar los tipos **deployment**
 ![112](imagenes/112.png)
 ![113](imagenes/113.png)
@@ -271,7 +273,7 @@ hubectl delete rs frontend --cascade=false # se elimina sin eliminar todo lo que
 kubectl delete pod --all # Elimina todos los pods
 ```
 
-**Deployments**<br />
+### Deployments
 Va a ser un emboltorio, tiene unos metadatos y el numero de replicas, viene bien
 usarlo cuando queremos que un objeto deployment gestione sus mediaset y pods.<br />
 ```yaml
@@ -305,19 +307,18 @@ kubectl set image deployment/nginx-deployment nginx=nginx:1.15;
 # Nos va a mostrar el estado del rollout
 kubectl rollout status deployment/nginx-deployment
 ```
-<br />
 
-**Volumenes**<br />
+### Volumenes
 Podemos asociar volumenes a Pods (manera por defecto), pero existen otros tipos de volumenes (este seria el volumen local), veremos otros tipos en AWS<br /><br />
-**ConfigMaps**<br />
+
+### ConfigMaps
 Vaalores de configuracion o ficheros que le vamos a pasar a nuestros contenedores
 ```sh
 kubectl create configmap test-cm --from-literal variable1=valor1
 kubectl descrive cm test-cm
 ```
-<br />
 
-**Secrets** <br />
+### Secrets
 PArecida a los ConfigMaps pero para almacenar cosas sensibles (password, token, etc), se van a almacenar de forma encriptada a travez de variables de entorno
 
 ```sh
@@ -326,25 +327,21 @@ kubectl create secret generic nombre_credeciales --from-file=./file.txt --from-f
 kubectl describe secrets nombre_credeciales
 kubectl get secrets nombre_credeciales -o yaml
 ```
-<br />
 
-**Request Limits** <br />
+### Request Limits
 
 - request: cuanos recursos necesitaran los povs como minimo
 - limit: maximo recursos que nuestro povs van a utilizar
 <br />
 tipos de recursos: memoria o cpu
-<br /><br />
 
-**Escalamiento**<br />
+### Escalamiento
 Cuanto trabajemos con kubernetes utilizaremos horizontal pod autoscaler (HPA)
-<br /><br />
 
-**Annotations**<br />
+### Annotations
 Igual que un label pero cambia donde lo usaremos, nos va a permitir agregar a los objetos datos para leer por otros kubernetes. Label nos permiten filtrar, Annotations nos permite agregar notas para detallar
-<br /><br />
 
-**RBAC**<br />
+### RBAC
 nos permite la autorizacion, permisos basados a roles
 
 # Kops en AWS
@@ -598,3 +595,125 @@ kubectl get pods -n kube-system --show-labels
 # vemos el log del ingress que listamos anteriormente
 kubectl -n kube-system logs alb-ingress-aasdas-ad -f
 ```
+External DNS, nos va a pertmitir configurar servicios externos de DNS sin un provider cloud
+
+# EKS
+
+Crearemos un usuario IAM para hacer todas las tareas y le doy permisos de administrador, copio las key y lo registro en el aws cli <br/><br/>
+
+Me copio en un fichero el nginx-deployment.yml y el servicio.yaml
+```yml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+  labels: 
+    app: nginx
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+      - name: nginx
+        image: minahue/nginx-helloworld
+        ports:
+        - containerPort: 80
+
+```
+
+```yml
+kind: Service
+apiVersion: v1
+metadata:
+  name: nginx-lb
+  labels: 
+    app: nginx
+spec:
+  type: LoadBalancer
+  selector:
+    app: nginx
+  ports:
+    - protocol: TCP
+    port: 80
+```
+Creamos un Role IAM para EKS y le asignams las policies AmazonEKSClusterPolicy y AmazonEKSServicePolicy
+
+<br /><br />
+Creamos un security group que acepte el trafico HTTPS por 443
+
+<br /><br />
+Entramos con el usuario que creamos y creamos el cluster EKS
+
+- creamos un cluster EKS
+- le agregamos un nombre
+- elegimos el role que creamos antes
+- elegimos la VPC y las 3 subredes
+- elegimos el security group
+
+<br />
+Debemos instalar un autentificador de AWS para manejar los usuarios de Kubernetes desde aws
+https://docs.aws.amazon.com/eks/latest/userguide/install-aws-iam-authenticator.html
+
+```sh
+curl -o aws-iam-authenticator https://amazon-eks.s3.us-west-2.amazonaws.com/1.17.9/2020-08-04/bin/linux/amd64/aws-iam-authenticator
+
+chmod +x ./aws-iam-authenticator
+
+sudo mv aws-iam-authenticator /usr/local/bin
+```
+Este se va a contactar con el cluster a travez de IAM y obtener un token de autentificacion
+
+```sh
+# va a generar un fichero de configuracion, debemios esperar gasta que este activo
+aws eks update-kubeconfig --name cluster_name
+
+# vemos todo lo que tenemos arriba
+kubectl get all
+
+```
+
+Vamos a empezar a desplegar los nodos <br />
+lanzamos un stack en CloudFormation y le pegamos el yaml que indica en la documentacion: https://docs.aws.amazon.com/eks/latest/userguide/launch-workers.html
+
+- ponemos el nombre del stack
+- nombre del cluster
+- security group, mismo que usamos
+- nombre al grupo de nodes,
+- tamaño
+- tipo instancia
+- NodeImageId: ID de instancia AMI que indica en la documentacion (Amazon EKS-optimized AMI)
+- tamaño
+- indicamos la VPC y las subnets
+- indicamos la opcion AWS CloudFormation might create IAM resources
+- nos bajamos el fichero
+```sh
+curl -o aws-auth-cm.yaml https://amazon-eks.s3.us-west-2.amazonaws.com/cloudformation/2020-08-12/aws-auth-cm.yaml
+```
+el rolearn va a ser el que vamos a ver en el outputs del stack
+```yml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: aws-auth
+  namespace: kube-system
+data:
+  mapRoles: |
+    - rolearn: arn:aws:iam::97823423823:role/eks-vcc-stack-NodeInstanceRole-1DAPILTOG # agregamos aca
+      username: system:node:{{EC2PrivateDNSName}}
+      groups:
+        - system:bootstrappers
+        - system:nodes
+```
+- modificamos el stack (ponemos arriba y damos Update Stack)
+- current template
+- modificamos el tamaño a 4
+<br />
+Se va a crear una nueva instancia y se agregara al cluster
+
+
