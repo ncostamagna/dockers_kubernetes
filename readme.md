@@ -2,6 +2,7 @@
 - [Instalaciones](#instalaciones)
 - [Minikube 101](#minikube-101)
 - [Minikube](#minikube)
+- [Kops en AWS](#kops-en-aws)
 
 <br />
 
@@ -344,3 +345,81 @@ Igual que un label pero cambia donde lo usaremos, nos va a permitir agregar a lo
 
 **RBAC**<br />
 nos permite la autorizacion, permisos basados a roles
+
+# Kops en AWS
+vemos la documentacion en https://github.com/kubernetes/kops
+<br />
+Para  instalarlo:
+```sh
+curl -LO https://github.com/kubernetes/kops/releases/download/$(curl -s https://api.github.com/repos/kubernetes/kops/releases/latest | grep tag_name | cut -d '"' -f 4)/kops-linux-amd64
+chmod +x kops-linux-amd64
+sudo mv kops-linux-amd64 /usr/local/bin/kops
+```
+
+Comandos basicos de cluster https://kops.sigs.k8s.io/getting_started/commands/#kops-rolling-update-cluster
+```sh
+kops create cluster # creamos cluster
+```
+Para este ejemplo creamos un s3 hosteado, kops genera una entrada NS para que nos podamos conectar al api de kubernetes
+```sh
+export KOPS_STATE_STORE=s3://vcc-test-kops/
+
+# este paso registra el cluster en la configuracion
+# --zone -> zona de los nodos
+# --master-zone -> zona nodos maestros
+kops create cluster --name testcluster.hosts3.co.uk --zone=eu-west-1a,eu-west-1c,eu-west-1c --master-zone=eu-west-1a,eu-west-1c,eu-west-1c --cloud aws --ssh-public-key /home/ncostamagna/.ssh/id_rsa.pub
+# Va a crear un monton de recursos para que el cluster empiece a funcionar
+
+# este paso va a forzar los cambios del cluster
+kops update cluster testcluster.hosts3.co.uk --yes
+# va a crear cosas y exportar el kubecfg para que tengamos lista nuestra linea de comando
+# hay que esperar un poquito
+```
+
+**Instance Groups**<br />
+Vemos que genero las instancias masters en cada zone y los nodos en que zona de disponibilidad
+<br /><br />
+
+- Vamos a la consola de EC2 y vemos que ya esta empezando a crear las instancias
+- Vamos a ver los Auto Scaling groups y vemos que corresponden con los q cremos, uno para cada master y uno para los nodos, cada uno de ellos tiene un Launch Configuration
+- Vamos a los Launch Configuration y vemos que tiene configurado
+- Se han creado varias entradas NS en Route53, tenemos una entrada interna y externa, vamos a usar la externa para atacar el api de kubernetes
+
+```sh
+# ejecutamos la vaidacion y vemos que ya hay nodos
+kops validate cluster
+
+# listo y veo los nodos
+kubectl get nodes 
+
+# informacion del cluster
+kops get testcluster.hosts3.co.uk
+
+# informacion de los instance groups
+kops get ig
+
+# podemos modificar algun instance group en particular, en este caso el nodes
+kops edit ig nodes
+# podemos editar y darle 3 size min y max, para que me de 3 nodos
+# luego debo actualizar el cluster
+kops update cluster testcluster.hosts3.co.uk --yes
+
+# podemos ejecutar tambien lo siguiente
+# va a matar algunas instancias y las va a volver a crear
+kops rolling-update cluster
+
+# Para eliminar el cluster completo
+kops delete cluster
+# me pide el nombre del cluster por seguridad
+kops delete cluster --name testcluster.hosts3.co.uk --yes
+```
+- get: informacion del cluster
+- describe: podemos describit cosas del cluster
+- edit: podemos editar cosas del cluster, la definicion de configuracion del cluster
+
+<br />
+podemos exportar el modelo a terraform: 
+```sh
+--target=terraform
+```
+https://kops.sigs.k8s.io/getting_started/arguments/
