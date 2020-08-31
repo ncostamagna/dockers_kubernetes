@@ -716,4 +716,11 @@ data:
 <br />
 Se va a crear una nueva instancia y se agregara al cluster
 
+### Eliminamos Cluster
+UNa de las desventajas de EKS es que no podemos bajarlo directamente, si lo hacemos van a quedar componentes actibvos
 
+```sh
+kubectl delete -f ingress.yaml -f servicio.yaml
+kubectl delete -f deployment.yaml
+# y eliminamos todo lo que fuimos instalando
+```
