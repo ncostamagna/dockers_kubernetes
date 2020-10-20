@@ -1,4 +1,7 @@
 # Indice
+- [Dockers](#Dockers)
+- [Kubernetes](#kubernetes)
+- [Arquitectura](#Arquitectura)
 - [Instalaciones](#instalaciones)
 - [Minikube 101](#minikube-101)
 - [Minikube](#minikube)
@@ -6,6 +9,23 @@
 - [EKS](#eks)
 
 <br />
+
+# Dockers
+
+
+# Kubernetes
+Orquestador de Dockers, es una herramienta que nos ayuda a manejar contenedores, <br />
+k8s (contraccion de Kubernetes)<br />
+Si un contenedor cae, otro contenedor deberia iniciar, algo que lo haga automaticamente 
+
+# Arquitectura
+
+### Master Node
+Tenemos un master que da las ordenes y los nodos, el master es el cerebro, el que da las ordenes, el que controla a los nodos<br />
+![Pods](imagenes/01.png)<br />
+En el master tengo el **Api Server**, me comunico con Kubernetes mediante esta api<br />
+Con **kubectl** utilizamos el comando para decirle a kubernetes que queremos
+
 
 # Instalaciones
 
