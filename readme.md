@@ -20,12 +20,22 @@ Si un contenedor cae, otro contenedor deberia iniciar, algo que lo haga automati
 
 # Arquitectura
 
-### Master Node
+#### Master Node
 Tenemos un master que da las ordenes y los nodos, el master es el cerebro, el que da las ordenes, el que controla a los nodos<br />
 ![Pods](imagenes/01.png)<br />
-En el master tengo el **Api Server**, me comunico con Kubernetes mediante esta api<br />
-Con **kubectl** utilizamos el comando para decirle a kubernetes que queremos
+En el master tengo el **Api Server**, me comunico con Kubernetes mediante esta api, en formato JSON, podemos utilizar un lenguaje de programacion o<br />
+Con **kubectl** utilizamos el comando para decirle a kubernetes que queremos<br />
 
+#### Kube Scheduler
+Cuando hago una solicitud a la api, kubernetes va a hablar con Scheduler.
+Scheduler va a buscar el nodo que este libre y lo va a poner ahi<br />
+![Pods](imagenes/02.png)<br />
+
+#### Kube Controller
+Node Controller, si una maquina se cae kuberenetes se encarga de levantar otra, se encarga que las replicas esten siempre corriendo tambien
+
+#### Etcd
+Base de datos clave valor donde el cluster almacena el estado, datos, backup, estados de como se esta moviendo todo en el cluster
 
 # Instalaciones
 
