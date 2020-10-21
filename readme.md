@@ -12,7 +12,6 @@
 
 # Dockers
 
-
 # Kubernetes
 Orquestador de Dockers, es una herramienta que nos ayuda a manejar contenedores, <br />
 k8s (contraccion de Kubernetes)<br />
@@ -36,6 +35,16 @@ Node Controller, si una maquina se cae kuberenetes se encarga de levantar otra, 
 
 #### Etcd
 Base de datos clave valor donde el cluster almacena el estado, datos, backup, estados de como se esta moviendo todo en el cluster
+
+#### Kubelet
+En cada nodo hay un Kubelet, servicio que esta corriendo en cada una de las maquinas que nos permite recibir ordenes del master y enviar informacion al master
+
+#### Kube Proxy
+Corre en cada nodo, se encarga de todo el tema de red
+
+
+#### Pod
+
 
 # Instalaciones
 
@@ -121,7 +130,36 @@ minikube nombre-del-addons # Nos abre el addons, en este caso lo hicimos con das
 
 # Minikube
 
-**Minikube** nos va a permitir crear un cluster de kubernetes en una pequeña maquina virtual, de esta forma podemos practicar los comandos de Kubernetes sin necesidad de crear un gran cluster
+**Minikube** nos va a permitir crear un cluster de kubernetes en una pequeña maquina virtual de manera local, de esta forma podemos practicar los comandos de Kubernetes sin necesidad de crear un gran cluster
+
+#### Instalacion
+
+https://kubernetes.io/es/docs/tasks/tools/install-minikube/
+
+```sh
+egrep --color 'vmx|svm' /proc/cpuinfo
+
+# kubectl
+curl -LO "https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl"
+chmod +x ./kubectl
+sudo mv ./kubectl /usr/local/bin/kubectl
+
+# Minikube
+curl -Lo minikube https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64 \
+  && chmod +x minikube
+sudo mv minikube /usr/local/bin/
+
+# Para confirmar la instalacion
+minikube status
+
+# Como lo utilizaremos con dockers utilizamos none
+# minikube start --vm-driver=none
+# Mas reciente
+minikube start --vm-driver=docker
+
+```
+Para simular el cluster necesita un Hypervicor como VirtualBox o KVM, o podemos utilizar Docker <br />
+Vemos en el root dos carpetas **.kube** y **.minikube** que es donde vamos a configurar la autentificacion hacia la API de kubernetes
 
 ```sh
 sudo apt-get install htop -y # ver recursos  de nuestra maquina, version avanzada de top
@@ -129,6 +167,19 @@ htop
 
 ```
 
+### Comandos
+
+```sh
+minikube status # Status
+
+# para liberar recursos que esta consumiendo minikube en nuestras maquinas
+# Si aparece un error de /tmp/juju-*, es un bug de minikube, borrando ese archivo funciona
+minikube stop 
+
+#Levantamos minikube
+minikube start
+
+```
 ### Addons
 Componentes de kubernetes
 - **dashboard**: Nos va a mostrat informacion de todo lo que esta corriendo
