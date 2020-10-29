@@ -44,7 +44,14 @@ Corre en cada nodo, se encarga de todo el tema de red
 
 
 #### Pod
-
+**Contenedores**<br />
+![Pods](imagenes/03.png)<br /><br />
+**Pod**<br/>
+Un Pod es uno o mas contenedores que comparten namespaces entre si, los namescpace que comparten son:
+- Red
+- IPC (Inter Process comunication) los Dockers van a poder ver los procesos entre ellos
+- UTS (El Hostname)<br />
+Vamos a tener una unica IP para entrar a todos los Containers del POD, el Pod en si mismo no corre, es solo un encubrimiento para los Dockes, los que si corren son los dockers
 
 # Instalaciones
 
