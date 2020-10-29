@@ -270,6 +270,13 @@ curl localhost
 # en nuestra maquina, podriamos acceder sin entrar al cluster
 ```
 
+```sh
+# Generamos un POD
+kubectl run --generator=run-pod/v1 nombrepod --image=nginx:alpine
+
+# Vemos el POD
+kubectl get pods
+```
 ### Metadatos
 ```yaml
 apiVersion: v1
