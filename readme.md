@@ -43,15 +43,9 @@ En cada nodo hay un Kubelet, servicio que esta corriendo en cada una de las maqu
 Corre en cada nodo, se encarga de todo el tema de red
 
 
-#### Pod
-**Contenedores**<br />
-![Pods](imagenes/03.png)<br /><br />
-**Pod**<br/>
-Un Pod es uno o mas contenedores que comparten namespaces entre si, los namescpace que comparten son:
-- Red
-- IPC (Inter Process comunication) los Dockers van a poder ver los procesos entre ellos
-- UTS (El Hostname)<br />
-Vamos a tener una unica IP para entrar a todos los Containers del POD, el Pod en si mismo no corre, es solo un encubrimiento para los Dockes, los que si corren son los dockers
+
+#### Contenedores
+![Pods](imagenes/03.png)
 
 # Instalaciones
 
@@ -219,11 +213,23 @@ kubectl run --image=nginx:1.7.0 --port:80 --replicas=2 nginx-deployment
 
 ### Pods
 
+
 Va a indicar un contenedor o un grupo de contenedores, no podemos ejecutar un contenedor a secas
 como lo hacemos con Docker, debemos hacerlo mediante un pod<br />
 Un Pod estara en ejecucion el tiempo que su proceso principal este en ejecucion, un pod por lo general sera un servidor web, una base de datos, etc..<br />
-
+Debo manipular mediante **kubectl** si lo hago mediante el Docker voy a tener problemas<br />
 ![Pods](imagenes/111.png)
+<br />
+Un Pod es uno o mas contenedores que comparten namespaces entre si, los namescpace que comparten son:
+- Red
+- IPC (Inter Process comunication) los Dockers van a poder ver los procesos entre ellos
+- UTS (El Hostname)<br />
+Vamos a tener una unica IP para entrar a todos los Containers del POD, el Pod en si mismo no corre, es solo un encubrimiento para los Dockes, los que si corren son los dockers<br />
+- NAME: nombre del Pod
+- READY: Dockers del Pod
+<br />En kubernetes la estrategia de un contenedor por Pod es la mas utilizada<br />
+<br />
+<br />
 
 Generamos un archivo **pod-test1.yaml**
 
@@ -276,6 +282,18 @@ kubectl run --generator=run-pod/v1 nombrepod --image=nginx:alpine
 
 # Vemos el POD
 kubectl get pods
+
+# Vemos el POD
+kubectl describe pod nombrepod
+
+# Ver todo lo que nos proporcional la API de kubernetes
+kubectl api-resources
+
+# Eliminamos Pod
+kubectl delete pod nombrepod
+
+# Obtenemos el Manifest, el archivo yaml del POD
+kubectl get pod nombrepod -o yaml
 ```
 ### Metadatos
 ```yaml
