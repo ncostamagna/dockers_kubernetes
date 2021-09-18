@@ -1,14 +1,46 @@
 # Indice
-- [Dockers](#Dockers)
+- [Dockers](#dockers)
 - [Kubernetes](#kubernetes)
-- [Arquitectura](#Arquitectura)
+- [Arquitectura](#arquitectura)
+      - [Master Node](#master-node)
+      - [Kube Scheduler](#kube-scheduler)
+      - [Kube Controller](#kube-controller)
+      - [Etcd](#etcd)
+      - [Kubelet](#kubelet)
+      - [Kube Proxy](#kube-proxy)
+      - [Contenedores](#contenedores)
 - [Instalaciones](#instalaciones)
-- [Minikube 101](#minikube-101)
-- [Minikube](#minikube)
+    + [Kubernetes](#kubernetes-1)
+    + [Minikube](#minikube)
+- [Minikube](#minikube-1)
+  * [Comandos](#comandos)
+  * [Minikube 101](#minikube-101)
+    + [Troubleshooting](#troubleshooting)
+- [Addons](#addons)
+- [Pods](#pods)
+  * [Metadatos](#metadatos)
+- [Selector](#selector)
+- [Replication Controllers](#replication-controllers)
+- [Servicios](#servicios)
+- [Replica Set](#replica-set)
+- [Deployments](#deployments)
+- [Volumenes](#volumenes)
+- [ConfigMaps](#configmaps)
+- [Secrets](#secrets)
+- [Funcionalidades](#funcionalidades)
+  * [Request Limits](#request-limits)
+  * [Escalamiento](#escalamiento)
+  * [Annotations](#annotations)
+  * [RBAC](#rbac)
 - [Kops en AWS](#kops-en-aws)
+    + [ELB](#elb)
+    + [ALB (App Load Balancer)](#alb--app-load-balancer-)
+      - [Ingress Controller](#ingress-controller)
 - [EKS](#eks)
+    + [Eliminamos Cluster](#eliminamos-cluster)
 
-<br />
+<small><i><a href='http://ecotrust-canada.github.io/markdown-toc/'>Table of contents generated with markdown-toc</a></i></small>
+
 
 # Dockers
 
@@ -49,7 +81,7 @@ Corre en cada nodo, se encarga de todo el tema de red
 
 # Instalaciones
 
-
+### Kubernetes
 ```sh
 sudo apt-get install apt-transport-https ca-certificates curl gnupg-agent software-properties-common -y
 
@@ -67,10 +99,45 @@ curl -Lo minikube https://storage.googleapis.com/minikube/releases/latest/miniku
     && chmod +x minikube
 sudo cp minikube /usr/local/bin && rm minikube
 sudo apt-get install -y virtualbox
-```
-<br />
 
-# Minikube 101
+# Para confirmar la instalacion
+minikube status
+
+
+# Como lo utilizaremos con dockers utilizamos none
+# minikube start --vm-driver=none
+# Mas reciente
+minikube start --vm-driver=docker
+```
+
+Para simular el cluster necesita un Hypervicor como VirtualBox o KVM, o podemos utilizar Docker <br />
+Vemos en el root dos carpetas **.kube** y **.minikube** que es donde vamos a configurar la autentificacion hacia la API de kubernetes
+
+```sh
+sudo apt-get install htop -y # ver recursos  de nuestra maquina, version avanzada de top
+htop
+
+```
+
+# Minikube
+
+**Minikube** nos va a permitir crear un cluster de kubernetes en una pequeña maquina virtual de manera local, de esta forma podemos practicar los comandos de Kubernetes sin necesidad de crear un gran cluster
+
+## Comandos
+
+```sh
+minikube status # Status
+
+# para liberar recursos que esta consumiendo minikube en nuestras maquinas
+# Si aparece un error de /tmp/juju-*, es un bug de minikube, borrando ese archivo funciona
+minikube stop 
+
+#Levantamos minikube
+minikube start
+
+```
+
+## Minikube 101
 
 Asignamos 2 cpu, 1G de RAM y el virtualbox que instalamos como driver<br />
 Inicializamos la maquina que vamos a usar
@@ -126,62 +193,8 @@ minikube addons enable nombre-del-addons # Activamos el addons
 
 minikube nombre-del-addons # Nos abre el addons, en este caso lo hicimos con dashboard
 ```
-<br />
 
-
-# Minikube
-
-**Minikube** nos va a permitir crear un cluster de kubernetes en una pequeña maquina virtual de manera local, de esta forma podemos practicar los comandos de Kubernetes sin necesidad de crear un gran cluster
-
-#### Instalacion
-
-https://kubernetes.io/es/docs/tasks/tools/install-minikube/
-
-```sh
-egrep --color 'vmx|svm' /proc/cpuinfo
-
-# kubectl
-curl -LO "https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl"
-chmod +x ./kubectl
-sudo mv ./kubectl /usr/local/bin/kubectl
-
-# Minikube
-curl -Lo minikube https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64 \
-  && chmod +x minikube
-sudo mv minikube /usr/local/bin/
-
-# Para confirmar la instalacion
-minikube status
-
-# Como lo utilizaremos con dockers utilizamos none
-# minikube start --vm-driver=none
-# Mas reciente
-minikube start --vm-driver=docker
-
-```
-Para simular el cluster necesita un Hypervicor como VirtualBox o KVM, o podemos utilizar Docker <br />
-Vemos en el root dos carpetas **.kube** y **.minikube** que es donde vamos a configurar la autentificacion hacia la API de kubernetes
-
-```sh
-sudo apt-get install htop -y # ver recursos  de nuestra maquina, version avanzada de top
-htop
-
-```
-
-### Comandos
-
-```sh
-minikube status # Status
-
-# para liberar recursos que esta consumiendo minikube en nuestras maquinas
-# Si aparece un error de /tmp/juju-*, es un bug de minikube, borrando ese archivo funciona
-minikube stop 
-
-#Levantamos minikube
-minikube start
-
-```
-### Addons
+# Addons
 Componentes de kubernetes
 - **dashboard**: Nos va a mostrat informacion de todo lo que esta corriendo
 
@@ -211,7 +224,7 @@ spec:   # Especificacion
 kubectl run --image=nginx:1.7.0 --port:80 --replicas=2 nginx-deployment
 ```
 
-### Pods
+# Pods
 
 
 Va a indicar un contenedor o un grupo de contenedores, no podemos ejecutar un contenedor a secas
@@ -295,7 +308,8 @@ kubectl delete pod nombrepod
 # Obtenemos el Manifest, el archivo yaml del POD
 kubectl get pod nombrepod -o yaml
 ```
-### Metadatos
+
+## Metadatos
 ```yaml
 apiVersion: v1
 kind: Pod #Tipo de objetos
@@ -311,13 +325,14 @@ spec:   #Especificacion
         ports:
         -   containerPort: 80
 ```
-### Selector
+
+# Selector
 Podemos filtrar y buscar los pods generados
 ```sh
 kubectl get pods -o wide --show-labels --selector project=aplicacion1
 ```
 
-### Replication Controllers
+# Replication Controllers
 Escalabilidad horizontal, podemos generar replicas y darle escalabilidad horizontal, esto genera un replication controller, lo podemos ver con **kubectl get all -o wide --show-labels**
 ```yaml
 apiVersion: v1
@@ -335,7 +350,9 @@ spec:   #Especificacion
         ports:
         -   containerPort: 80
 ```
-### Servicios
+
+# Servicios
+
 Para acceder desde afuera al puerto 80, un servicio es una abstraccion que define como va a ser el acceso externo, el pod que va a acceder en un servicio lo a va ser mediante un selector<br />
 Pods -> Selection -> Servicio <br />
 
@@ -374,7 +391,7 @@ En este caso si elimino el pod-ejempli1.yml no me afecaria el puerto del servici
 - NodePort: Expone servicio en cada ip de los nodos, puerto estatico
 - LoadBalancer: Expone el servicio externamente usando un load balancer
 
-### Replica Set
+# Replica Set
 va a soportar el nuevo modo de selectores, la recomendacion es no usar la Replica Set sino es su lugar utilizar los tipos **deployment**
 ![112](imagenes/112.png)
 ![113](imagenes/113.png)
@@ -386,7 +403,7 @@ hubectl delete rs frontend --cascade=false # se elimina sin eliminar todo lo que
 kubectl delete pod --all # Elimina todos los pods
 ```
 
-### Deployments
+# Deployments
 Va a ser un emboltorio, tiene unos metadatos y el numero de replicas, viene bien
 usarlo cuando queremos que un objeto deployment gestione sus mediaset y pods.<br />
 ```yaml
@@ -421,17 +438,17 @@ kubectl set image deployment/nginx-deployment nginx=nginx:1.15;
 kubectl rollout status deployment/nginx-deployment
 ```
 
-### Volumenes
+# Volumenes
 Podemos asociar volumenes a Pods (manera por defecto), pero existen otros tipos de volumenes (este seria el volumen local), veremos otros tipos en AWS<br /><br />
 
-### ConfigMaps
+# ConfigMaps
 Vaalores de configuracion o ficheros que le vamos a pasar a nuestros contenedores
 ```sh
 kubectl create configmap test-cm --from-literal variable1=valor1
 kubectl descrive cm test-cm
 ```
 
-### Secrets
+# Secrets
 PArecida a los ConfigMaps pero para almacenar cosas sensibles (password, token, etc), se van a almacenar de forma encriptada a travez de variables de entorno
 
 ```sh
@@ -441,20 +458,22 @@ kubectl describe secrets nombre_credeciales
 kubectl get secrets nombre_credeciales -o yaml
 ```
 
-### Request Limits
+# Funcionalidades
+
+## Request Limits
 
 - request: cuanos recursos necesitaran los povs como minimo
 - limit: maximo recursos que nuestro povs van a utilizar
 <br />
 tipos de recursos: memoria o cpu
 
-### Escalamiento
+## Escalamiento
 Cuanto trabajemos con kubernetes utilizaremos horizontal pod autoscaler (HPA)
 
-### Annotations
+## Annotations
 Igual que un label pero cambia donde lo usaremos, nos va a permitir agregar a los objetos datos para leer por otros kubernetes. Label nos permiten filtrar, Annotations nos permite agregar notas para detallar
 
-### RBAC
+## RBAC
 nos permite la autorizacion, permisos basados a roles
 
 # Kops en AWS
