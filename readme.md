@@ -2,12 +2,12 @@
 - [Dockers](#dockers)
 - [Kubernetes](#kubernetes)
 - [Arquitectura](#arquitectura)
-      - [Master Node](#master-node)
-      - [Kube Scheduler](#kube-scheduler)
-      - [Kube Controller](#kube-controller)
-      - [Etcd](#etcd)
-      - [Kubelet](#kubelet)
-      - [Kube Proxy](#kube-proxy)
+  * [Master Node](#master-node)
+  * [Kube Scheduler](#kube-scheduler)
+  * [Kube Controller](#kube-controller)
+  * [Etcd](#etcd)
+  * [Kubelet](#kubelet)
+  * [Kube Proxy](#kube-proxy)
       - [Contenedores](#contenedores)
 - [Instalaciones](#instalaciones)
     + [Kubernetes](#kubernetes-1)
@@ -51,27 +51,27 @@ Si un contenedor cae, otro contenedor deberia iniciar, algo que lo haga automati
 
 # Arquitectura
 
-#### Master Node
+## Master Node
 Tenemos un master que da las ordenes y los nodos, el master es el cerebro, el que da las ordenes, el que controla a los nodos<br />
 ![Pods](imagenes/01.png)<br />
 En el master tengo el **Api Server**, me comunico con Kubernetes mediante esta api, en formato JSON, podemos utilizar un lenguaje de programacion o<br />
 Con **kubectl** utilizamos el comando para decirle a kubernetes que queremos<br />
 
-#### Kube Scheduler
+## Kube Scheduler
 Cuando hago una solicitud a la api, kubernetes va a hablar con Scheduler.
 Scheduler va a buscar el nodo que este libre y lo va a poner ahi<br />
 ![Pods](imagenes/02.png)<br />
 
-#### Kube Controller
+## Kube Controller
 Node Controller, si una maquina se cae kuberenetes se encarga de levantar otra, se encarga que las replicas esten siempre corriendo tambien
 
-#### Etcd
+## Etcd
 Base de datos clave valor donde el cluster almacena el estado, datos, backup, estados de como se esta moviendo todo en el cluster
 
-#### Kubelet
+## Kubelet
 En cada nodo hay un Kubelet, servicio que esta corriendo en cada una de las maquinas que nos permite recibir ordenes del master y enviar informacion al master
 
-#### Kube Proxy
+## Kube Proxy
 Corre en cada nodo, se encarga de todo el tema de red
 
 
