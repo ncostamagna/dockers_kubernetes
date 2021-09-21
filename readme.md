@@ -47,7 +47,8 @@
 # Kubernetes
 Orquestador de Dockers, es una herramienta que nos ayuda a manejar contenedores, <br />
 k8s (contraccion de Kubernetes)<br />
-Si un contenedor cae, otro contenedor deberia iniciar, algo que lo haga automaticamente 
+Si un contenedor cae, otro contenedor deberia iniciar, algo que lo haga automaticamente <br />
+*Aclaracion*: en algunos ejemplos utilizaremos **k** en lugar de **kutectl**
 
 # Arquitectura
 
@@ -255,17 +256,22 @@ spec:   #Especificacion
     containers:
     -   name: nginx #contenedor nginx
         image: nginx:1.7.9 #va a descargar de docker hub
+        command: echo "cont1" # comandos que podemos ejecutar
         ports:
         -   containerPort: 80
+
+--- # podemos agregar mas pods separados por 3 -
+
+
 ```
 
 ```sh
 kubectl apply -f 
-sudo kubectl get all # Objeto de pod-test1.yaml tipo Pod que esta corriendo
-sudo kubectl get pods
-sudo kubectl get pods -o wide # Vemos en que nodo se esta ejecutando los Pods
+kubectl get all # Objeto de pod-test1.yaml tipo Pod que esta corriendo
+kubectl get pods
+kubectl get pods -o wide # Vemos en que nodo se esta ejecutando los Pods
 
-sudo kubectl describe pod {nombre} # detalle del pod
+kubectl describe pod {nombre} # detalle del pod
 kubectl delete -f {nombre} # eliminamos por el nombre pod-test1.yaml 
 kubectl delete pod {nombre} # o por el tipo de objeto (pod) y el nombre del objeto (nginx)
 ```
@@ -279,6 +285,9 @@ Cuando levantemos un Pods no vamos a poder verlo desde afuera hasta que levantem
 ```sh
 kubectl apply -f pod-test1.yaml # ejecutamos el yaml que habiamos generado
 kubectl exec -it nginx bash # Entramos al pod, nginx es el nombre del pod
+kubectl exec -it doscont - cont1 -- sh #ingresar a un pod a al otro [cont1, cont2]
+
+kubectl logs mipod # ver el log del pod
 
 #instalamos curl
 curl localhost # vemos como nos devuelve el html por defecto de nginx
@@ -315,7 +324,7 @@ apiVersion: v1
 kind: Pod #Tipo de objetos
 metadata: #metadatos de uso interno
     name: nginx
-    labels:
+    labels: # vamos autilizarlo para poder identificarlos de forma mas sencilla
       project: aplicacion1
       environment: testing # Podriamos identificar en los diferentes ambientes
 spec:   #Especificacion
@@ -325,6 +334,14 @@ spec:   #Especificacion
         ports:
         -   containerPort: 80
 ```
+Los labels son muuy importantes, no solo para filtrar sino para que los componentes de mas alto nivel puedan gestionarlos 
+```sh
+k get pods -l app=front
+```
+
+## Problemas
+- No se recuperan solos, si uno muere, nadie va a crear uno nuevo
+- No pueden replicarse
 
 # Selector
 Podemos filtrar y buscar los pods generados
@@ -351,50 +368,9 @@ spec:   #Especificacion
         -   containerPort: 80
 ```
 
-# Servicios
-
-Para acceder desde afuera al puerto 80, un servicio es una abstraccion que define como va a ser el acceso externo, el pod que va a acceder en un servicio lo a va ser mediante un selector<br />
-Pods -> Selection -> Servicio <br />
-
-```sh
-kubectl apply -f pod-test1.yaml 
-```
-Generamos un service
-```yaml
-apiVersion: v1
-kind: Service #Tipo de objetos
-metadata: #metadatos de uso interno
-    name: my-service
-    labels:
-      project: aplicacion1
-      environment: testing # Podriamos identificar en los diferentes ambientes
-spec:
-    type: NodePort 
-    selector: # el servicio va a enviar el trafico a los que esten usando este selector
-      project: aplicacion1
-      environment: testing # Podriamos identificar en los diferentes ambientes
-    ports:
-      - protocol: TCP
-        port: 80 # envia el trafico al puerto 80
-```
-```sh
-kubectl apply -f servicio.yaml 
-kubectl get all -o wide --show-labels # tiene que mandar a los labels que definimos,
-                                      # sino va a mandar a un pod que no existe
-
-minikube ip # nos devuelve la IP
-curl 192.168.98.101.31318 # a la IP de minikube y al puerto servicio
-```
-
-En este caso si elimino el pod-ejempli1.yml no me afecaria el puerto del servicio
-- ClusterIP: Expone servicio en ip interna del cluster
-- NodePort: Expone servicio en cada ip de los nodos, puerto estatico
-- LoadBalancer: Expone el servicio externamente usando un load balancer
 
 # Replica Set
 va a soportar el nuevo modo de selectores, la recomendacion es no usar la Replica Set sino es su lugar utilizar los tipos **deployment**
-![112](imagenes/112.png)
-![113](imagenes/113.png)
 ```sh
 kubectl get rs # listarlo
 hubectl describe rs frontend # descripcion del replica set frontend
@@ -437,6 +413,47 @@ kubectl set image deployment/nginx-deployment nginx=nginx:1.15;
 # Nos va a mostrar el estado del rollout
 kubectl rollout status deployment/nginx-deployment
 ```
+
+# Servicios
+
+Para acceder desde afuera al puerto 80, un servicio es una abstraccion que define como va a ser el acceso externo, el pod que va a acceder en un servicio lo a va ser mediante un selector<br />
+Pods -> Selection -> Servicio <br />
+
+```sh
+kubectl apply -f pod-test1.yaml 
+```
+Generamos un service
+```yaml
+apiVersion: v1
+kind: Service #Tipo de objetos
+metadata: #metadatos de uso interno
+    name: my-service
+    labels:
+      project: aplicacion1
+      environment: testing # Podriamos identificar en los diferentes ambientes
+spec:
+    type: NodePort 
+    selector: # el servicio va a enviar el trafico a los que esten usando este selector
+      project: aplicacion1
+      environment: testing # Podriamos identificar en los diferentes ambientes
+    ports:
+      - protocol: TCP
+        port: 80 # envia el trafico al puerto 80
+```
+```sh
+kubectl apply -f servicio.yaml 
+kubectl get all -o wide --show-labels # tiene que mandar a los labels que definimos,
+                                      # sino va a mandar a un pod que no existe
+
+minikube ip # nos devuelve la IP
+curl 192.168.98.101.31318 # a la IP de minikube y al puerto servicio
+```
+
+En este caso si elimino el pod-ejempli1.yml no me afecaria el puerto del servicio
+- ClusterIP: Expone servicio en ip interna del cluster
+- NodePort: Expone servicio en cada ip de los nodos, puerto estatico
+- LoadBalancer: Expone el servicio externamente usando un load balancer
+
 
 # Volumenes
 Podemos asociar volumenes a Pods (manera por defecto), pero existen otros tipos de volumenes (este seria el volumen local), veremos otros tipos en AWS<br /><br />
