@@ -19,11 +19,13 @@
 - [Addons](#addons)
 - [Pods](#pods)
   * [Metadatos](#metadatos)
+  * [Problemas](#problemas)
 - [Selector](#selector)
 - [Replication Controllers](#replication-controllers)
-- [Servicios](#servicios)
 - [Replica Set](#replica-set)
+  * [Problemas](#problemas-1)
 - [Deployments](#deployments)
+- [Servicios](#servicios)
 - [Volumenes](#volumenes)
 - [ConfigMaps](#configmaps)
 - [Secrets](#secrets)
@@ -40,6 +42,7 @@
     + [Eliminamos Cluster](#eliminamos-cluster)
 
 <small><i><a href='http://ecotrust-canada.github.io/markdown-toc/'>Table of contents generated with markdown-toc</a></i></small>
+
 
 
 # Dockers
@@ -370,7 +373,9 @@ spec:   #Especificacion
 
 
 # Replica Set
-va a soportar el nuevo modo de selectores, la recomendacion es no usar la Replica Set sino es su lugar utilizar los tipos **deployment**
+Dueño de los Pods<br />
+Puedo generar replicas de pods. Si elimino un pod, el rs se va a encargar de generarlo nuevamente<br />
+Va a soportar el nuevo modo de selectores, la recomendacion es no usar la Replica Set sino es su lugar utilizar los tipos **deployment**
 ```sh
 kubectl get rs # listarlo
 hubectl describe rs frontend # descripcion del replica set frontend
@@ -379,7 +384,12 @@ hubectl delete rs frontend --cascade=false # se elimina sin eliminar todo lo que
 kubectl delete pod --all # Elimina todos los pods
 ```
 
+## Problemas
+Si actualizamos un rs con una nueva version, seguiran corriendo los otros pods
+
 # Deployments
+Dueño de los Replica Set<br />
+Nos ayuda a actualizar los RS, se encaga de mantener siempre una cierta cantidad de pods vivos<br />
 Va a ser un emboltorio, tiene unos metadatos y el numero de replicas, viene bien
 usarlo cuando queremos que un objeto deployment gestione sus mediaset y pods.<br />
 ```yaml
