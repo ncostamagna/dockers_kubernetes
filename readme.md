@@ -388,7 +388,7 @@ kubectl delete pod --all # Elimina todos los pods
 Si actualizamos un rs con una nueva version, seguiran corriendo los otros pods
 
 # Deployments
-Dueño de los Replica Set<br />
+Dueño (Owner) de los Replica Set<br />
 Nos ayuda a actualizar los RS, se encaga de mantener siempre una cierta cantidad de pods vivos<br />
 Va a ser un emboltorio, tiene unos metadatos y el numero de replicas, viene bien
 usarlo cuando queremos que un objeto deployment gestione sus mediaset y pods.<br />
@@ -421,8 +421,20 @@ spec:
 kubectl set image deployment/nginx-deployment nginx=nginx:1.15;
 
 # Nos va a mostrar el estado del rollout
+# De todo lo que va pasando en el deployment
 kubectl rollout status deployment/nginx-deployment
 ```
+Podemos ir viendo el historico de los deployments
+```sh
+k rollout history deployment [deployment-name]
+
+# Puedo ver los cambios
+k rollout history deployment [deploy-name] --revision=[revision number]
+
+# Hacer un rollback a la revision que queremos saltar
+k rollout undo deployment [deploy-name] --to_revision=[revision number]
+```
+
 
 # Servicios
 
