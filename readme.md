@@ -911,8 +911,9 @@ kubectl delete -f deployment.yaml
 Gestor de paquetes orientado a paquetes de kubernetes<br />
 <img src="imagenes/04.png" /><br />
 
-# Repositorios
-Donde voy a dejar un conjunto de charts<br />
+## Repositorios
+Donde voy a dejar o buscar un conjunto de charts<br />
+
 ```sh
 # Añadimos un repositorio (stable es es repo standart de helm)
 helm repo add stable https://charts.helm.sh/stable
@@ -923,4 +924,29 @@ helm search repo stable # Lista todo los charts
 helm search repo stable | wc -l # Total de charts
 
 helm env # Nos muestra las env de helm
+```
+
+Podemos buscar charts en https://artifacthub.io/ de diferentes repositorios
+
+```sh
+# Puedo instalar el repositorio
+helm repo add elastic https://helm.elastic.co
+
+# Puedo instalar directamente el chart
+helm install my-elasticsearch elastic/elasticsearch --version 7.14.0
+```
+
+Si creamos un respotirosio, siempre debemos tener el **index.yaml**
+
+### Busqueda
+
+```sh
+helm search hub [valor] # Busco repositorio que esta en la nube
+helm search repo [valor] # Busco de los que me descargue
+
+helm search repo [valor] -o yaml # Me sale en modo yaml
+helm search repo [valor] -o json # Me sale en modo json
+
+helm search repo [valor] -l # Me muestra todo, con historico
+helm search repo [valor] --version [version] # Alguna version
 ```
