@@ -123,6 +123,17 @@ htop
 
 ```
 
+## Helm
+https://helm.sh/<br/>
+Descargamos de https://github.com/helm/helm/releases/tag/v3.7.0
+```sh
+tar -xzf helm-v3.7.0-linux-amd64.tar.gz
+cd linux-amd64 # El nombre del folder que descomprimio
+sudo cp helm /usr/local/bin
+
+helm version
+```
+
 # Minikube
 
 **Minikube** nos va a permitir crear un cluster de kubernetes en una pequeña maquina virtual de manera local, de esta forma podemos practicar los comandos de Kubernetes sin necesidad de crear un gran cluster
@@ -437,7 +448,7 @@ k rollout undo deployment [deploy-name] --to_revision=[revision number]
 
 
 # Servicios
-
+Observa todos los pods con determinados labels y me da una IP unica<br />
 Para acceder desde afuera al puerto 80, un servicio es una abstraccion que define como va a ser el acceso externo, el pod que va a acceder en un servicio lo a va ser mediante un selector<br />
 Pods -> Selection -> Servicio <br />
 
@@ -894,4 +905,22 @@ UNa de las desventajas de EKS es que no podemos bajarlo directamente, si lo hace
 kubectl delete -f ingress.yaml -f servicio.yaml
 kubectl delete -f deployment.yaml
 # y eliminamos todo lo que fuimos instalando
+```
+
+# Helm
+Gestor de paquetes orientado a paquetes de kubernetes<br />
+<img src="imagenes/04.png" /><br />
+
+# Repositorios
+Donde voy a dejar un conjunto de charts<br />
+```sh
+# Añadimos un repositorio (stable es es repo standart de helm)
+helm repo add stable https://charts.helm.sh/stable
+
+helm repo list #Listar repos
+
+helm search repo stable # Lista todo los charts
+helm search repo stable | wc -l # Total de charts
+
+helm env # Nos muestra las env de helm
 ```
