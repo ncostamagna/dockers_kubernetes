@@ -1141,3 +1141,69 @@ Con utilizacion de variables
     - {{ $indice }}: {{$valor}}
     {{- end }}
 ```
+
+#### With
+Genera un ambito dentro de las plaantillas, para las variables
+
+```yaml
+data:
+{{- with .Values.departamentos}}
+{{- range .}} # tomo el de .Values.departamentos
+  ciudad: {{.}} # Tomo cada item del array
+{{- end}}
+{{- end}}
+```
+
+### Funciones
+POdemos utilizar funciones o pipelines (comandos uno detras de otra) ya estandars<br />
+https://helm.sh/docs/chart_template_guide/functions_and_pipelines/
+
+```yaml
+# Funciones
+data:
+  quote: {{ quote .Values.city }} # POner entre commillas
+  upper: {{ upper .Values.city }} # en mayusculas
+  now: {{ now }} # fecha del dia
+  substr: {{ substr 0 3 .Values.city }} # sub string
+  network: {{getHostByName "curso" }} # obtengo host 
+  network: {{getHostByName "www.google.com" }} # obtengo host
+
+# Pipeline
+# se usa el pipe ( | ) para indicar que el proceso de una funcion es 
+# enviado a otro lado (otra funcion)
+data:
+  quote: {{ quote .Values.city | upper }}
+  upper: {{ upper .Values.city | repeat 3 }}
+  now: {{ now |  htmlDate }}
+  network: {{ getHostByName "curso" | substr 0 3}}
+```
+
+### Partials
+Subplantillaas que podemos utilizar en otros templaes<br />
+Ficheros **.tpl** (no va a kubernetes, se genera en tiempo de ejecucion)<br />
+```yaml
+# genero plantilla
+{{- define "plantilla1.etiquetas" }}
+  labels: 
+     responsable: Thomas
+     fecha: {{ now | htmlDate }}
+{{- end }}
+
+# genero plantilla que necesita contexto
+{{- define "plantilla1.etiquetas" }}
+  labels: 
+     responsable: Thomas
+     fecha: {{ now | htmlDate }}
+     nombre: {{ .Chart.Name }}
+{{- end }}
+```
+
+```yaml
+# incluyo plantulla
+ name: mi-name
+ {{- template "plantulla1.etiquetas"}}
+
+# incluyo plantilla que necesita contexto
+{{- template "plantilla1.etiquetas" . }} 
+# le mando el . que indica en esta instancia que es root
+```
