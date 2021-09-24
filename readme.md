@@ -976,9 +976,20 @@ helm get values apache1 # parametros y values que les pusimos como parametros
 helm get all apache1 # Todos los comandos al mismo tiempo
 
 helm show readme bitname/apache > readme # readme del chart
-helm show 
-helm show 
-helm show 
-helm show 
+helm show chart bitname/apache # definicion del componente
+helm show values bitname/apache # Valores que podemos definir
+helm show all bitname/apache # Todos los comandos anteriores al mismo tiempo
 
+helm upgrade apache1 bitname/apache # Actualiza chart (cambia el revision +1)
+helm upgrade --set service.port=8080 apache1 bitname/apache # upgrade para camiar el port
+
+helm show values bitnami/apache > 2021-09-Helm3/values.yaml # template de valores 
+helm upgrade -f 2021-09-Helm3/values.yaml apache1 bitnami/apache # upgrade en base a file
+helm list # cambio la version
+
+helm history apache1 # Historico
+helm rollback apache1 3 # Volvemos a la version 3 (genera una nueva version)
+
+helm uninstall --dry-run apache1 # Que hay antes de borrarlo
+helm uninstall --keep-history # LA desistalo pero guardo el historico
 ```
