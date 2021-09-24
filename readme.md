@@ -486,7 +486,9 @@ En este caso si elimino el pod-ejempli1.yml no me afecaria el puerto del servici
 - ClusterIP: Expone servicio en ip interna del cluster
 - NodePort: Expone servicio en cada ip de los nodos, puerto estatico
 - LoadBalancer: Expone el servicio externamente usando un load balancer
+<br />
 
+**Minikube no soporta LoadBalancer por defecto**
 
 # Volumenes
 Podemos asociar volumenes a Pods (manera por defecto), pero existen otros tipos de volumenes (este seria el volumen local), veremos otros tipos en AWS<br /><br />
@@ -949,4 +951,34 @@ helm search repo [valor] -o json # Me sale en modo json
 
 helm search repo [valor] -l # Me muestra todo, con historico
 helm search repo [valor] --version [version] # Alguna version
+```
+
+### Eliminar
+
+```sh
+helm repo remove elastic
+```
+
+## Charts
+```sh
+# Instalacion
+# le damos el nombre apache1
+helm  install apache1 bitnami/apache
+helm  install redis1 bitnami/redis
+# UNa vez que lo instalamos nos genera los componentes de kubernetes
+
+
+helm status apache1 # status
+
+helm get manifest apache1 # manifest de apache
+helm get notes apache1 # Comentarios del chart
+helm get values apache1 # parametros y values que les pusimos como parametros
+helm get all apache1 # Todos los comandos al mismo tiempo
+
+helm show readme bitname/apache > readme # readme del chart
+helm show 
+helm show 
+helm show 
+helm show 
+
 ```
