@@ -85,7 +85,12 @@ Corre en cada nodo, se encarga de todo el tema de red
 
 # Instalaciones
 
-### Kubernetes
+## VS Code
+Instalacion de plugins:
+- Docker
+- Kubernetes
+
+## Kubernetes
 ```sh
 sudo apt-get install apt-transport-https ca-certificates curl gnupg-agent software-properties-common -y
 
@@ -95,7 +100,7 @@ chmod +x ./kubectl
 sudo mv ./kubectl /usr/local/bin/kubectl
 ```
 
-### Minikube
+## Minikube
 ```sh
 #instalamos minikube
 egrep --color 'vmx|svm' /proc/cpuinfo
@@ -992,4 +997,147 @@ helm rollback apache1 3 # Volvemos a la version 3 (genera una nueva version)
 
 helm uninstall --dry-run apache1 # Que hay antes de borrarlo
 helm uninstall --keep-history # LA desistalo pero guardo el historico
+```
+
+### Creacion de Charts
+<img src="imagenes/05.png"><br />
+Vamos a ver alguno en el repositorio (podemos ver donde se guardan con helm env)<br />
+
+```sh
+helm create chart1 # crear un chart con un esqueleto
+```
+
+- Chart: definicion de la app
+- values: valores de la app, estructura
+- templates: nuestros componentes del chart (service, deployment)
+
+```sh
+helm install mi-nginx . # Como estoy en el directorio pongo .
+helm install --dry-run miC1 . # Veo si hay errores antes de instalar
+helm install --debug --dry-run miC1 . # Info mas detallada
+
+helm upgrade mysql1 . # Para actualizar
+```
+POdemos ignorar ficheros al momento de instalar usando **.helmignore**<br />
+Podemos definir placeholder, que internamente lo maneja con go ( {{.Release.Name }} )<br />
+**Tenemos que tener cuidado con los valores nulos**<br />
+
+<img src="imagenes/06.png"><br />
+
+- release
+- values
+- chart
+- files
+- capabilities
+- template
+
+### Values
+
+```yaml
+  MYSQL_ROOT_PASSWORD: {{.Values.rootpass}} # Voy a buscar de values
+  name: {{.Release.Name}}-mysql-deploy # Voy a buscar release
+```
+
+```sh
+# Actuaiza las variables con el archivo que le paso (los values)
+helm upgrade value1 3-chart-valores-compuestos -f vales-to-reeplace.yaml
+
+# O con los set
+helm upgrade value1 3-chart-valores-compuestos --set limites.memoria="200Mi"
+```
+
+### Logica programacion
+
+#### Variables
+```yaml
+spec:
+  containers:
+   {{ $version := "9.0"}} # Creacion de variables
+   - name: tomcat1     
+     image: tomcat:{{$version}}
+```
+
+#### Comentarios
+
+```yaml
+  containers:
+   - name: tomcat1     
+     {{- /*
+
+     HELM comment . Esta condicio hace...
+
+     */}}
+```
+
+
+#### Condicional IF
+
+```sh
+{{ if CONDICION }}
+  # PROCESO
+{{ else if CONDICION }}
+  # HACER OTRA COSA
+{{ else }}
+  # OPCIÓN POR DEFECTO
+{{ end }}
+```
+```yaml
+spec:
+  containers:
+   - name: tomcat1     
+     # si le pongo un - hace un trim de espacios en blanco
+     {{- if eq .Values.entorno "desarrollo" }} 
+     image: tomcat:9.0
+     {{ else }}
+     image: tomcat:10.0
+     {{ end }}
+```
+
+#### Operadores
+
+eq ne lt gt ge le and or not
+
+```sh
+{{ if operador .Arg1 .Arg2}}
+
+{{ if eq .Values.favorite.drink "coffee" }}mug: true{{ end }}
+
+{{ if eq .Values.favorite.drink "coffee" }}
+  mug: true
+{{ end }}
+```
+
+#### AND / OR
+```sh
+{{ if and Arg1 Arg2}}
+{{ if or Arg1 Arg2}}
+```
+
+```yaml
+spec:
+  containers:
+  - name: apache
+  {{- if and  (eq .Values.entorno  "desarrollo") ( eq .Values.departamento "RRHH" )  }}
+    image: httpd:2.4
+  {{ else}}
+    image: httpd:2.2
+  {{ end }}
+    ports:
+    - containerPort: {{ .Values.puerto}}
+```
+
+#### Bucles
+```yaml
+  departamentos: |- # /- va a tener mas de un valor
+    {{- range .Values.departamentos }}
+    - {{ . }}  # El punto hace referencia al valor actual del array
+    {{- end }}
+```
+Con utilizacion de variables
+```yaml
+  # por cada interaccion guardo el indice y el valor
+  departamentos: |-
+    {{- range $indice,$valor:=.Values.departamentos }}
+    - {{ $indice }}: {{$valor}}
+    {{- end }}
 ```

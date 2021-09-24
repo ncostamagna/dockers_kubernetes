@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: {{ .Release.Name }}-nginx1 # Le pongo el nombre de la release antes
+  labels:
+    zone: ejemplo
+    version: produccion
+    eti1: {{.Release.Time}}
+  annotations: {
+    fecha: tiempo-{{.Release.Time}} ,
+    namespace: nombre-{{.Release.Namespace}},
+    actualizacion: Actualizacion-{{.Release.IsUpgrade}},
+    instalacion: Instalacion-{{.Release.IsInstall}},
+    revision: Revision-{{.Release.Revision}}
+  }
+spec:
+  containers:
+   - name: nginx   
+     image: apasoft/nginx:v1
