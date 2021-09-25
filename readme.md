@@ -10,8 +10,10 @@
   * [Kube Proxy](#kube-proxy)
       - [Contenedores](#contenedores)
 - [Instalaciones](#instalaciones)
-    + [Kubernetes](#kubernetes-1)
-    + [Minikube](#minikube)
+  * [VS Code](#vs-code)
+  * [Kubernetes](#kubernetes-1)
+  * [Minikube](#minikube)
+  * [Helm](#helm)
 - [Minikube](#minikube-1)
   * [Comandos](#comandos)
   * [Minikube 101](#minikube-101)
@@ -40,10 +42,26 @@
       - [Ingress Controller](#ingress-controller)
 - [EKS](#eks)
     + [Eliminamos Cluster](#eliminamos-cluster)
+- [Helm](#helm-1)
+  * [Repositorios](#repositorios)
+    + [Busqueda](#busqueda)
+    + [Eliminar](#eliminar)
+  * [Charts](#charts)
+    + [Creacion de Charts](#creacion-de-charts)
+    + [Values](#values)
+    + [Logica programacion](#logica-programacion)
+      - [Variables](#variables)
+      - [Comentarios](#comentarios)
+      - [Condicional IF](#condicional-if)
+      - [Operadores](#operadores)
+      - [AND / OR](#and---or)
+      - [Bucles](#bucles)
+      - [With](#with)
+    + [Funciones](#funciones)
+    + [Partials](#partials)
+- [Argo](#argo)
 
 <small><i><a href='http://ecotrust-canada.github.io/markdown-toc/'>Table of contents generated with markdown-toc</a></i></small>
-
-
 
 # Dockers
 
@@ -1207,3 +1225,5 @@ Ficheros **.tpl** (no va a kubernetes, se genera en tiempo de ejecucion)<br />
 {{- template "plantilla1.etiquetas" . }} 
 # le mando el . que indica en esta instancia que es root
 ```
+
+# Argo
