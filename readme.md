@@ -157,6 +157,32 @@ sudo cp helm /usr/local/bin
 helm version
 ```
 
+## Argo
+```sh
+kubectl create ns argo
+kubectl apply -n argo -f https://raw.githubusercontent.com/argoproj/argo-workflows/stable/manifests/quick-start-postgres.yaml
+
+k -n argo get pods
+
+kubectl -n argo port-forward deployment/argo-server 2746:2746
+
+# Abrimos https://localhost:2746/
+```
+
+## Argo CD
+```sh
+kubectl create namespace argocd
+kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+
+kubectl patch svc argocd-server -n argocd -p '{"spec": {"type": "LoadBalancer"}}'
+
+# Abrimos https://localhost:8080/
+kubectl port-forward svc/argocd-server -n argocd 8080:443
+
+# Obtener password
+kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d
+```
+
 # Minikube
 
 **Minikube** nos va a permitir crear un cluster de kubernetes en una pequeña maquina virtual de manera local, de esta forma podemos practicar los comandos de Kubernetes sin necesidad de crear un gran cluster
@@ -1227,3 +1253,5 @@ Ficheros **.tpl** (no va a kubernetes, se genera en tiempo de ejecucion)<br />
 ```
 
 # Argo
+workflow nativo que nos ayuda a orquestar los Jobs de kubernetes, crea y ejecuta workflows completamente en kubernete<br />
+Para abrir la interface usa http://localhost:2746<br />
