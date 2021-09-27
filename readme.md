@@ -1255,3 +1255,76 @@ Ficheros **.tpl** (no va a kubernetes, se genera en tiempo de ejecucion)<br />
 # Argo
 workflow nativo que nos ayuda a orquestar los Jobs de kubernetes, crea y ejecuta workflows completamente en kubernete<br />
 Para abrir la interface usa http://localhost:2746<br />
+- Workflow en linea
+- Workflow templates
+- Cluster Workflow templates
+- Cron Workflow
+<br />
+Ejecutamos y lo vemos en la UI de Argo:
+```sh
+k -n argo create -f wf-hello-world.yaml
+```
+Podemos ver toda la informacion necesaria
+
+## Templates
+
+### Container
+Nos permite tener los containers
+```yaml
+apiVersion: argoproj.io/v1alpha1
+kind: Workflow # Indicamos que es Workflow (lo entiende argo)
+metadata:
+  generateName: wf-container-template- # nombre base
+spec:
+  entrypoint: container-template
+  templates:
+  - name: container-template # Nombre del container
+    container:
+      image: python:3.8-slim # IMagen del container
+      command: [echo, "The container template was executed successfully."] # comandos
+```
+```sh
+k -n argo create -f 02-container.yaml
+```
+
+### Script
+Nos permite ejecutar scripts
+
+### Resource
+Nos permite generar recursos, por ejecplo crear otro Workflow
+
+```yaml
+apiVersion: argoproj.io/v1alpha1
+kind: Workflow
+metadata:
+  generateName: wf-resource-template-
+spec:
+  entrypoint: resource-template
+  templates:
+  - name: resource-template
+    resource:
+      action: create
+      manifest: |
+        apiVersion: argoproj.io/v1alpha1
+        kind: Workflow
+        metadata:
+          name: wf-test
+        spec:
+          entrypoint: test-template
+          templates:
+          - name: test-template
+            script:
+              image: python:3.8-slim
+              command: [python]
+              source: |
+                print("Workflow wf-test created with resource template.")
+```
+
+### Invocators
+Podemos invocar templates en secuencia o en paralelo
+
+- <a href="2021-09-Argo/01-templates/05-template-serial.yaml"> Serial </a>
+- <a href="2021-09-Argo/01-templates/06-template-parallel.yaml"> Parallel </a>
+
+<br />
+Podemos usar <a href="2021-09-Argo/01-templates/08-dag.yaml"> Dag </a> para defenit las dependiencias
