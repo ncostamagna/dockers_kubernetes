@@ -1328,3 +1328,14 @@ Podemos invocar templates en secuencia o en paralelo
 
 <br />
 Podemos usar <a href="2021-09-Argo/01-templates/08-dag.yaml"> Dag </a> para defenit las dependiencias
+
+## Logs
+Para los logs argo nos proporciona minIO
+```sh
+# Vemos que esta corriendo minio
+k -n argo get pods
+
+# alnzamos minio
+k -n argo port-forward minio 9000:9000
+```
+Entamos a **localhost:9000**, por defecto el access key es **admin** y el secret key es **password**
